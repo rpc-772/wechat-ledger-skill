@@ -1,0 +1,3 @@
+display_name: 微信记账
+short_description: 解析一句话记账并通过技能脚本写入 Notion
+default_prompt: 使用 wechat_ledger 处理简短中文记账消息；若金额明确，则优先调用 `python skills/wechat_ledger/scripts/run.py --message "{原始消息}" --write`，并只返回简短确认或失败信息。
