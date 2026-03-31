@@ -40,6 +40,7 @@
 - `NOTION_API_KEY`
 - `NOTION_DATA_SOURCE_ID`
 - `NOTION_VERSION=2025-09-03`
+- `LEDGER_API_TOKEN`（可选，给你的 API 加一层 Bearer 鉴权）
 
 注意：
 
@@ -65,12 +66,78 @@ python .\skills\wechat_ledger\scripts\run.py --message "午饭32微信"
 python .\skills\wechat_ledger\scripts\run.py --message "午饭32微信" --write
 ```
 
+## HTTP API 部署
+
+如果 ClawBot 不能执行本地脚本，推荐部署这个最小 API：
+
+- 入口文件：`api/main.py`
+- 依赖文件：`requirements.txt`
+- Render 一键配置：`render.yaml`
+
+安装依赖：
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+启动服务：
+
+```powershell
+uvicorn api.main:app --host 0.0.0.0 --port 8000
+```
+
+健康检查：
+
+```powershell
+curl http://127.0.0.1:8000/health
+```
+
+记账请求：
+
+```powershell
+curl http://127.0.0.1:8000/wechat-ledger ^
+  -X POST ^
+  -H "Authorization: Bearer your_api_token" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"message\":\"午饭32微信\"}"
+```
+
+返回格式：
+
+```json
+{
+  "ok": true,
+  "reply": "已记：午饭 / 32.0 / 微信",
+  "page_id": "..."
+}
+```
+
+### Render 最短部署
+
+这个仓库已经带了 `render.yaml`，适合直接从 GitHub 部署到 Render。
+
+步骤：
+
+1. 把仓库推到 GitHub
+2. 打开 Render 控制台
+3. 选择 `Blueprint` 或 `New +` -> `Blueprint`
+4. 连接你的 GitHub 仓库
+5. Render 会自动识别 `render.yaml`
+6. 在环境变量里填真实值：
+   - `NOTION_API_KEY`
+   - `LEDGER_API_TOKEN`
+7. 部署完成后，先访问：
+   - `/health`
+8. 再用 `POST /wechat-ledger` 测试
+
 ## 上传 GitHub 时建议保留
 
 必须保留：
 
+- `api/main.py`
 - `skills/wechat_ledger/`
 - `scripts/wechat_ledger_to_notion.py`
+- `requirements.txt`
 - `.env.example`
 - `NOTION_TEMPLATE.md`
 - `NOTION_API_EXAMPLE.md`
